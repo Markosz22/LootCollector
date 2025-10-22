@@ -666,7 +666,7 @@ local function CreateContextMenu(anchor, title, buttons, options)
     for i, buttonData in ipairs(buttons) do
         local btn = CreateFrame("Button", nil, contextMenu, "UIPanelButtonTemplate")
         btn:SetSize(menuWidth - 20, 20) -- Uses full menu width minus padding.
-        btn:SetFrameLevel(FRAME_LEVEL)
+        btn:SetFrameLevel(contextMenu:GetFrameLevel() + 1)
         if lastButton then
             btn:SetPoint("TOPLEFT", lastButton, "BOTTOMLEFT", 0, -5)
         else
@@ -2112,7 +2112,7 @@ function Viewer:CreateWindow()
     sourceFilterBtn:SetPoint("LEFT", filtersLabel, "RIGHT", 10, 0)
     sourceFilterBtn:SetText("Source")
     sourceFilterBtn:SetFrameStrata(FRAME_STRATA)
-    sourceFilterBtn:SetFrameLevel(FRAME_LEVEL)
+    sourceFilterBtn:SetFrameLevel(FRAME_LEVEL + 1)
     sourceFilterBtn:SetScript("OnClick", function(self, button)
         -- Activates filtering for the 'source' column.
         local values = GetUniqueValues("source")
@@ -2126,7 +2126,7 @@ function Viewer:CreateWindow()
     qualityFilterBtn:SetPoint("LEFT", sourceFilterBtn, "RIGHT", 10, 0)
     qualityFilterBtn:SetText("Quality")
     qualityFilterBtn:SetFrameStrata(FRAME_STRATA)
-    qualityFilterBtn:SetFrameLevel(FRAME_LEVEL)
+    qualityFilterBtn:SetFrameLevel(FRAME_LEVEL + 1)
     qualityFilterBtn:SetScript("OnClick", function(self, button)
         -- Activates filtering for the 'quality' column.
         local values = GetUniqueValues("quality")
@@ -2140,7 +2140,7 @@ function Viewer:CreateWindow()
     lootedFilterBtn:SetPoint("LEFT", qualityFilterBtn, "RIGHT", 10, 0)
     lootedFilterBtn:SetText("Looted")
     lootedFilterBtn:SetFrameStrata(FRAME_STRATA)
-    lootedFilterBtn:SetFrameLevel(FRAME_LEVEL)
+    lootedFilterBtn:SetFrameLevel(FRAME_LEVEL + 1)
     lootedFilterBtn:SetScript("OnClick", function(self, button)
         -- Activates filtering for the 'looted' column.
         local values = GetUniqueValues("looted")
@@ -2154,7 +2154,7 @@ function Viewer:CreateWindow()
     duplicatesFilterBtn:SetPoint("LEFT", lootedFilterBtn, "RIGHT", 10, 0)
     duplicatesFilterBtn:SetText("Duplicates")
     duplicatesFilterBtn:SetFrameStrata(FRAME_STRATA)
-    duplicatesFilterBtn:SetFrameLevel(FRAME_LEVEL)
+    duplicatesFilterBtn:SetFrameLevel(FRAME_LEVEL + 1)
     duplicatesFilterBtn:SetScript("OnClick", function(self, button)
         Viewer.columnFilters.duplicates = not Viewer.columnFilters.duplicates
         Viewer.currentPage = 1
@@ -2821,6 +2821,8 @@ function Viewer:CreateRows()
         showBtn:SetSize(50, ROW_HEIGHT - 2)
         showBtn:SetPoint("RIGHT", -70, 0) -- Positions to the left of the delete button.
         showBtn:SetText("Show")
+        showBtn:SetFrameStrata(FRAME_STRATA)
+        showBtn:SetFrameLevel(FRAME_LEVEL + 1)
         showBtn:SetScript("OnClick", function()
             if row.discoveryData then
                 self:ShowOnMap(row.discoveryData)
@@ -2832,6 +2834,8 @@ function Viewer:CreateRows()
         deleteBtn:SetSize(60, ROW_HEIGHT - 2)
         deleteBtn:SetPoint("RIGHT", -5, 0)
         deleteBtn:SetText("Delete")
+        deleteBtn:SetFrameStrata(FRAME_STRATA)
+        deleteBtn:SetFrameLevel(FRAME_LEVEL + 1)
         deleteBtn:SetScript("OnClick", function()
             if row.discoveryData then
                 self:ConfirmDelete(row.discoveryData)
