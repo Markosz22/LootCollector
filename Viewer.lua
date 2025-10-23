@@ -1045,46 +1045,44 @@ local function GetQualityColor(quality)
     return 1, 1, 1
 end
 
--- Retrieves the color associated with a given discovery status.
-local function GetStatusColor(status)
-    if status == STATUS_CONFIRMED then
-        return 0.2, 1.0, 0.2
-    elseif status == STATUS_UNCONFIRMED then
-        return 1.0, 0.75, 0.0
-    elseif status == STATUS_FADING then
-        return 1.0, 0.5, 0.0
-    elseif status == STATUS_STALE then
-        return 0.6, 0.6, 0.6
-    else
-        return 1.0, 1.0, 1.0
-    end
-end
-
 -- Checks if an item name corresponds to a "Mystic Scroll".
 local function IsMysticScroll(itemName)
     return itemName and _strfind(itemName, "Mystic Scroll", 1, true) ~= nil
 end
 
+-- Class names lookup table
+local VALID_CLASSES = {
+    ["Warrior"] = true, ["Paladin"] = true, ["Hunter"] = true,
+    ["Rogue"] = true, ["Priest"] = true, ["Shaman"] = true,
+    ["Mage"] = true, ["Warlock"] = true, ["Druid"] = true
+}
+
 -- Detects the character class required for an item, utilizing a unified cache.
 local function GetItemCharacterClass(itemLink, itemID)
-    if not itemLink then return "" end
-    if not itemID then return "" end
+    if not itemLink or not itemID then return "" end
 
-    -- Checks the unified cache first.
-    if Cache.characterClass[itemID] ~= nil then
-        return Cache.characterClass[itemID]
+    -- Check cache first
+    local cached = Cache.characterClass[itemID]
+    if cached ~= nil then
+        return cached
     end
 
     local characterClass = ""
-
     localClassScanTip:SetHyperlink(itemLink)
-    -- Checks the second line of the tooltip by referencing the global text frame.
+    
     local line2Text = _G["LootCollectorClassScanTooltipTextLeft2"]:GetText()
     if line2Text then
-        characterClass = _strgsub(line2Text, "^%s*(.-)%s*$", "%1") -- Trims whitespace.
+        -- Extract class name (strip color codes if present)
+        local plainText = line2Text:match("^|c%x%x%x%x%x%x%x%x(.+)|r$") or line2Text
+        -- Trim whitespace
+        local className = plainText:match("^%s*(.-)%s*$")
+        
+        -- Validate and store if valid class
+        if VALID_CLASSES[className] then
+            characterClass = line2Text
+        end
     end
 
-    -- Caches the result in the unified cache.
     Cache.characterClass[itemID] = characterClass
     return characterClass
 end
@@ -1093,50 +1091,41 @@ end
 local function IsWorldforged(itemLink)
     if not itemLink then return false end
 
-    -- Checks the unified cache first.
-    if Cache.worldforged[itemLink] ~= nil then
-        return Cache.worldforged[itemLink]
+    -- Check cache first
+    local cached = Cache.worldforged[itemLink]
+    if cached ~= nil then
+        return cached
     end
 
-    -- Attempts to use Core's existing tooltip system.
+    -- Determine which tooltip to use
     local Core = L:GetModule("Core", true)
-    local isWorldforged = false
-
+    local tooltip, tooltipName
+    
     if Core and Core._scanTip then
-        -- Uses Core's existing tooltip.
-        Core._scanTip:ClearLines()
-        Core._scanTip:SetHyperlink(itemLink)
-
-        for i = 2, 5 do
-            local fs = _G["LootCollectorCoreScanTipTextLeft" .. i]
-            local text = fs and fs:GetText()
-            if text and _strfind(_strlower(text), "worldforged", 1, true) then
-                isWorldforged = true
-                break
-            end
-        end
+        tooltip = Core._scanTip
+        tooltipName = "LootCollectorCoreScanTipTextLeft"
     else
-        -- Fallback: creates a new tooltip if Core's is unavailable.
         if not localWorldforgedScanTip then
-            localWorldforgedScanTip = CreateFrame("GameTooltip", "LootCollectorViewerScanTip", UIParent,
-                "GameTooltipTemplate")
+            localWorldforgedScanTip = CreateFrame("GameTooltip", "LootCollectorViewerScanTip", UIParent, "GameTooltipTemplate")
             localWorldforgedScanTip:SetOwner(UIParent, "ANCHOR_NONE")
         end
+        tooltip = localWorldforgedScanTip
+        tooltipName = "LootCollectorViewerScanTipTextLeft"
+    end
 
-        localWorldforgedScanTip:ClearLines()
-        localWorldforgedScanTip:SetHyperlink(itemLink)
+    tooltip:ClearLines()
+    tooltip:SetHyperlink(itemLink)
 
-        for i = 2, 5 do
-            local fs = _G["LootCollectorViewerScanTipTextLeft" .. i]
-            local text = fs and fs:GetText()
-            if text and _strfind(_strlower(text), "worldforged", 1, true) then
-                isWorldforged = true
-                break
-            end
+    -- Scan lines 2-5 for "worldforged" (case-insensitive)
+    local isWorldforged = false
+    for i = 2, 5 do
+        local text = _G[tooltipName .. i]:GetText()
+        if text and _strfind(text, "orldforged", 1, true) then
+            isWorldforged = true
+            break
         end
     end
 
-    -- Caches the result in the unified cache.
     Cache.worldforged[itemLink] = isWorldforged
     return isWorldforged
 end
@@ -1494,8 +1483,8 @@ function Viewer:GetFilteredDiscoveries()
             a_val = tonumber(a.discovery.timestamp) or 0
             b_val = tonumber(b.discovery.timestamp) or 0
         elseif self.sortColumn == "slot" then
-            a_val = a.equipLoc or ""
-            b_val = b.equipLoc or ""
+            a_val = a.equipLoc and _G[a.equipLoc] or ""
+            b_val = b.equipLoc and _G[b.equipLoc] or ""
         elseif self.sortColumn == "type" then
             a_val = a.itemSubType or ""
             b_val = b.itemSubType or ""
