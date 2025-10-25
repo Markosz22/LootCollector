@@ -40,10 +40,10 @@ local cityZonesToPurge = {
 -- ist of GUID prefixes (Zone IDs) to purge
 local guidPrefixesToPurge = {
     -- ["22-"] = true, -- skip for now because Org and Hillsbrad returns same id...
-    ["37-"] = true, 
-    ["23-"] = true, 
+   -- ["37-"] = true, 
+   -- ["23-"] = true, 
     -- ["46-"] = true, -- skip for now because UC and WC returns same id...
-    ["10-"] = true, 
+   -- ["10-"] = true, 
 }
 
 local function debugPrint(message)
